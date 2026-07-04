@@ -146,7 +146,9 @@
 
     /* ===== FORM ===== */
     .olcu-grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:start}
-    .left-col{position:sticky;top:24px;display:flex;flex-direction:column;gap:20px}
+    /* not: sticky kaldırıldı — kısa pencerelerde sütun ekrandan taşıyor ve
+       bölüm geçişlerinde Chromium yeniden boyamayı atlayıp "donmuş" bırakabiliyordu */
+    .left-col{display:flex;flex-direction:column;gap:20px}
     .field{margin-bottom:14px}
     .field label{display:block;font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.1px;margin-bottom:6px}
     .field input,.field select{
@@ -276,9 +278,19 @@
 
     /* ===== FİYATLANDIRMA ===== */
     .f-grid{display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:20px;align-items:start}
-    .f-settings{display:flex;flex-direction:column;gap:16px;position:sticky;top:24px;min-width:0}
+    .f-settings{display:flex;flex-direction:column;gap:16px;min-width:0}
     .f-set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
     .f-field{min-width:0}
+    /* fiyat ayar sekmeleri */
+    .fs-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:10px 12px;
+        border-bottom:1px solid var(--line2);background:#faf9f7}
+    .fs-tab{border:1.5px solid var(--line);background:#fff;color:var(--ink2);padding:9px 6px;
+        border-radius:9px;font-size:12.5px;font-weight:700;cursor:pointer;transition:all .13s;
+        display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;white-space:nowrap}
+    .fs-tab:hover{border-color:#cfccc5}
+    .fs-tab.active{background:var(--copper);border-color:var(--copper);color:#fff;box-shadow:0 3px 10px rgba(180,83,9,.3)}
+    .fs-panel{display:none}
+    .fs-panel.active{display:block}
     .f-field label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
     .f-field .unit-in{display:flex;align-items:center;min-width:0;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;transition:border-color .13s,box-shadow .13s}
     .f-field .unit-in:focus-within{border-color:var(--copper);box-shadow:0 0 0 3px rgba(180,83,9,.1)}
@@ -571,7 +583,7 @@
         <div class="ss"><b id="s-is">0</b><small>İş</small></div>
         <div class="ss"><b id="s-adet">0</b><small>Adet</small></div>
     </div>
-    <div class="side-ver">v2.2 · Atölye Sürümü</div>
+    <div class="side-ver">v2.3 · Atölye Sürümü</div>
 </aside>
 
 <!-- ===== MOBİL BAŞLIK ===== -->
@@ -704,8 +716,13 @@
         <div class="f-grid">
             <div class="f-settings">
                 <div class="card">
-                    <div class="card-head"><h3>Alüminyum Fiyatı (kg bazlı)</h3></div>
-                    <div class="card-body">
+                    <div class="fs-tabs">
+                        <button class="fs-tab active" data-fst="alu" onclick="fsTab('alu')">⛁ Alüminyum</button>
+                        <button class="fs-tab" data-fst="plise" onclick="fsTab('plise')">≋ Plise</button>
+                        <button class="fs-tab" data-fst="duz" onclick="fsTab('duz')">⊞ Düz</button>
+                    </div>
+                    <!-- SEKME 1: ALÜMİNYUM -->
+                    <div class="card-body fs-panel active" id="fsp-alu">
                         <div class="f-set-grid">
                             <div class="f-field"><label>Plise Profil</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="aluPliseKg"><span class="u">₺/kg</span></div></div>
                             <div class="f-field"><label>Düz Profil</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="aluDuzKg"><span class="u">₺/kg</span></div></div>
@@ -714,26 +731,49 @@
                             <div class="f-field"><label>Düz Kasa Ağırlığı</label><div class="unit-in"><input type="number" step="0.001" min="0" data-f="kgmDuzKasa"><span class="u">kg/m</span></div></div>
                             <div class="f-field"><label>Fire Payı</label><div class="unit-in"><input type="number" step="0.5" min="0" data-f="firePct"><span class="u">%</span></div></div>
                         </div>
-                        <div class="f-note" style="margin-top:12px">Hesap: kullanılan net profil metresi × kg/m × (1 + fire payı) × ₺/kg. Profil ağırlıklarını (kg/m) kendi profillerinize göre bir kez ayarlayın; sonra sadece ₺/kg fiyatını güncellemeniz yeterli.</div>
+                        <div class="f-note" style="margin-top:12px">Hesap: kullanılan net profil metresi × kg/m × (1 + fire payı) × ₺/kg. Profil ağırlıklarını (kg/m) bir kez ayarlayın; sonra sadece ₺/kg fiyatını güncellemek yeterli.</div>
                     </div>
-                </div>
-                <div class="card">
-                    <div class="card-head"><h3>Tül &amp; İp</h3></div>
-                    <div class="card-body">
+                    <!-- SEKME 2: PLİSE -->
+                    <div class="card-body fs-panel" id="fsp-plise">
                         <div class="f-set-grid">
-                            <div class="f-field"><label>Tül</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="tulM2"><span class="u">₺/m²</span></div></div>
+                            <div class="f-field"><label>Plise Tülü (pileli)</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="tulPliseM2"><span class="u">₺/m²</span></div></div>
                             <div class="f-field"><label>İp</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="ipM"><span class="u">₺/m</span></div></div>
+                            <div class="f-field"><label>Plise Takozu</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="pliseTakozFiyat"><span class="u">₺/ad</span></div></div>
+                            <div class="f-field"><label>Takoz Adedi</label><div class="unit-in"><input type="number" step="1" min="0" data-f="pliseTakozAdet"><span class="u">ad/sineklik</span></div></div>
+                            <div class="f-field"><label>Teker</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="tekerFiyat"><span class="u">₺/ad</span></div></div>
+                            <div class="f-field"><label>Teker Adedi</label><div class="unit-in"><input type="number" step="1" min="0" data-f="tekerAdet"><span class="u">ad/kanat</span></div></div>
+                        </div>
+                        <div class="f-note" style="margin-top:12px">
+                            <b>Adet kuralları:</b><br>
+                            • Tül: pileli plise tülü, kesim <b>boy − 4,5 cm</b>, m² üzerinden.<br>
+                            • İp: <b>(En + Boy) × 2 + 40 cm</b>.<br>
+                            • Teker kanat başına sayılır → <b>duble plisede otomatik 2 kanat × adet</b>.<br>
+                            Her işte kaç adet gittiği sağdaki listede satıra tıklayınca görünür.
                         </div>
                     </div>
-                </div>
-                <div class="card">
-                    <div class="card-head"><h3>Yardımcı Malzemeler</h3></div>
-                    <div class="card-body">
-                        <table class="aks-tbl">
-                            <thead><tr><th>Malzeme</th><th style="width:76px">₺/adet</th><th style="width:64px">Plise</th><th style="width:64px">Düz</th></tr></thead>
-                            <tbody id="aksBody"></tbody>
-                        </table>
-                        <div class="f-note" style="margin-top:12px">"Plise" ve "Düz" sütunları sineklik başına kullanılan adettir. Teker, kanat başına sayılır (duble plisede 2 kanat olduğundan otomatik 2 katı alınır).</div>
+                    <!-- SEKME 3: DÜZ -->
+                    <div class="card-body fs-panel" id="fsp-duz">
+                        <div class="f-set-grid">
+                            <div class="f-field"><label>Düz Tülü (pilesiz)</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="tulDuzM2"><span class="u">₺/m²</span></div></div>
+                            <div class="f-field"><label>Fitil (plastik)</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="fitilM"><span class="u">₺/m</span></div></div>
+                            <div class="f-field"><label>Düz Takoz</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="duzTakozFiyat"><span class="u">₺/ad</span></div></div>
+                            <div class="f-field"><label>Orta Kayıt Takozu</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="kayitTakozFiyat"><span class="u">₺/ad</span></div></div>
+                            <div class="f-field"><label>Menteşe</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="menteseFiyat"><span class="u">₺/ad</span></div></div>
+                            <div class="f-field"><label>Kapı Boyu Eşiği</label><div class="unit-in"><input type="number" step="1" min="0" data-f="menteseEsik"><span class="u">cm</span></div></div>
+                            <div class="f-field"><label>Çıtçıt</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="citcitFiyat"><span class="u">₺/ad</span></div></div>
+                            <div class="f-field"><label>Kulp</label><div class="unit-in"><input type="number" step="0.01" min="0" data-f="kulpFiyat"><span class="u">₺/ad</span></div></div>
+                        </div>
+                        <div class="f-note" style="margin-top:12px">
+                            <b>Adetler otomatik hesaplanır, sadece fiyat girin:</b><br>
+                            • <b>Düz takoz:</b> sineklik başına <b>4</b> · <b>Kulp:</b> <b>1</b>.<br>
+                            • Orta kayıt: boy 100 cm'i geçince her tam 100 cm'de 1 kayıt.<br>
+                            • <b>Orta kayıt takozu:</b> her kayıtın iki ucuna 1'er → <b>kayıt × 2</b>.<br>
+                            • <b>Menteşe:</b> boy eşiğin altında <b>2</b>, eşik ve üzeri (kapı boyu) <b>3</b>.<br>
+                            • <b>Çıtçıt:</b> 2+ orta kayıt varsa <b>2</b>, yoksa <b>1</b>.<br>
+                            • <b>Fitil:</b> kasa içi çevresi + her kayıt boyu kadar metre.<br>
+                            • Tül: pilesiz düz tül, net kasa içi ölçüsünden m².<br>
+                            Her işte kaç adet gittiği sağdaki listede satıra tıklayınca görünür.
+                        </div>
                     </div>
                 </div>
                 <div class="card">
@@ -823,35 +863,54 @@ const aktifler=()=>isler.filter(i=>i.durum!=='iptal');
    FİYAT AYARLARI
    ============================================================ */
 const F_DEFAULT={
+    // Sekme 1 · Alüminyum
     aluPliseKg:340, aluDuzKg:320,
     kgmPliseKasa:0.420, kgmPliseKanat:0.360, kgmDuzKasa:0.450,
     firePct:8,
-    tulM2:90, ipM:3,
-    dukkanPct:25, musteriPct:55,
-    aks:[
-        {id:'takoz',   ad:'Takoz',              fiyat:5,  plise:4, duz:4, per:'adet'},
-        {id:'teker',   ad:'Teker (kanat başı)', fiyat:8,  plise:2, duz:0, per:'kanat'},
-        {id:'mentese', ad:'Menteşe',            fiyat:12, plise:0, duz:2, per:'adet'},
-        {id:'kulp',    ad:'Kulp',               fiyat:10, plise:0, duz:1, per:'adet'},
-        {id:'citcit',  ad:'Çıtçıt',             fiyat:4,  plise:0, duz:2, per:'adet'}
-    ]
+    // Sekme 2 · Plise
+    tulPliseM2:90, ipM:3,
+    pliseTakozFiyat:5, pliseTakozAdet:4,
+    tekerFiyat:8, tekerAdet:2,          // kanat başına
+    // Sekme 3 · Düz (adetler sabit kural: takoz 4, kulp 1)
+    tulDuzM2:60, fitilM:3,
+    duzTakozFiyat:5,
+    kayitTakozFiyat:5,                  // kayıt başına 2 (otomatik)
+    menteseFiyat:12, menteseEsik:170,   // boy >= eşik → 3 menteşe, altı → 2
+    citcitFiyat:4,                      // 2+ kayıt → 2, yoksa 1 (otomatik)
+    kulpFiyat:10,
+    // Kâr
+    dukkanPct:25, musteriPct:55
 };
-const LS_FIYAT='ardic_pro_fiyat_v1';
+const LS_FIYAT='ardic_pro_fiyat_v2';
 let F=fiyatOku();
 function fiyatOku(){
     try{
         const d=JSON.parse(localStorage.getItem(LS_FIYAT));
-        if(!d) return JSON.parse(JSON.stringify(F_DEFAULT));
-        const f={...JSON.parse(JSON.stringify(F_DEFAULT)),...d};
-        // aksesuar listesini varsayılanla eşle (yeni malzeme eklenirse korunur)
-        f.aks=F_DEFAULT.aks.map(a=>{
-            const eski=(d.aks||[]).find(x=>x.id===a.id);
-            return eski?{...a,fiyat:+eski.fiyat||0,plise:+eski.plise||0,duz:+eski.duz||0}:{...a};
-        });
+        if(d) return {...JSON.parse(JSON.stringify(F_DEFAULT)),...d};
+        // eski sürüm (v1) ayarlarından taşı
+        const v1=JSON.parse(localStorage.getItem('ardic_pro_fiyat_v1'));
+        const f=JSON.parse(JSON.stringify(F_DEFAULT));
+        if(v1){
+            ['aluPliseKg','aluDuzKg','kgmPliseKasa','kgmPliseKanat','kgmDuzKasa','firePct','ipM','dukkanPct','musteriPct']
+                .forEach(k=>{if(v1[k]!==undefined)f[k]=v1[k];});
+            if(v1.tulM2!==undefined){f.tulPliseM2=v1.tulM2;f.tulDuzM2=v1.tulM2;}
+            const a=id=>(v1.aks||[]).find(x=>x.id===id)||{};
+            if(a('takoz').fiyat!==undefined){f.pliseTakozFiyat=a('takoz').fiyat;f.duzTakozFiyat=a('takoz').fiyat;f.kayitTakozFiyat=a('takoz').fiyat;}
+            if(a('takoz').plise!==undefined)f.pliseTakozAdet=a('takoz').plise;
+            if(a('teker').fiyat!==undefined)f.tekerFiyat=a('teker').fiyat;
+            if(a('teker').plise!==undefined)f.tekerAdet=a('teker').plise;
+            if(a('mentese').fiyat!==undefined)f.menteseFiyat=a('mentese').fiyat;
+            if(a('citcit').fiyat!==undefined)f.citcitFiyat=a('citcit').fiyat;
+            if(a('kulp').fiyat!==undefined)f.kulpFiyat=a('kulp').fiyat;
+        }
         return f;
     }catch(e){return JSON.parse(JSON.stringify(F_DEFAULT));}
 }
 function fiyatYaz(){try{localStorage.setItem(LS_FIYAT,JSON.stringify(F));}catch(e){}}
+function fsTab(ad){
+    document.querySelectorAll('.fs-tab').forEach(b=>b.classList.toggle('active',b.dataset.fst===ad));
+    document.querySelectorAll('.fs-panel').forEach(p=>p.classList.toggle('active',p.id==='fsp-'+ad));
+}
 function fiyatSifirla(){
     if(!confirm('Tüm birim fiyatlar ve kâr oranları varsayılan değerlere dönecek. Emin misiniz?'))return;
     F=JSON.parse(JSON.stringify(F_DEFAULT));
@@ -861,30 +920,26 @@ function fiyatSifirla(){
 /* --- fiyat form bağlama --- */
 function fiyatFormDoldur(){
     document.querySelectorAll('[data-f]').forEach(inp=>{inp.value=F[inp.dataset.f];});
-    const tb=document.getElementById('aksBody');
-    tb.innerHTML=F.aks.map((a,i)=>`<tr>
-        <td class="aks-ad">${esc(a.ad)}</td>
-        <td><input type="number" step="0.01" min="0" value="${a.fiyat}" data-aks="${i}" data-col="fiyat"></td>
-        <td><input type="number" step="1" min="0" value="${a.plise}" data-aks="${i}" data-col="plise"></td>
-        <td><input type="number" step="1" min="0" value="${a.duz}" data-aks="${i}" data-col="duz"></td>
-    </tr>`).join('');
 }
 document.addEventListener('input',e=>{
     const t=e.target;
-    if(t.dataset&&t.dataset.f!==undefined&&t.dataset.f){
+    if(t.dataset&&t.dataset.f){
         F[t.dataset.f]=parseFloat(t.value)||0;
-        fiyatYaz(); renderFiyat();
-    }else if(t.dataset&&t.dataset.aks!==undefined){
-        F.aks[+t.dataset.aks][t.dataset.col]=parseFloat(t.value)||0;
         fiyatYaz(); renderFiyat();
     }
 });
 
-/* --- iş başına maliyet dökümü --- */
+/* --- iş başına maliyet dökümü ---
+   Adet kuralları:
+   Plise: takoz sabit adet, teker = adet × kanat sayısı (duble=2 kanat)
+   Düz:   takoz sabit adet, orta kayıt takozu = kayıt × 2,
+          menteşe = boy>=eşik ? 3 : 2, çıtçıt = kayıt>=2 ? 2 : 1,
+          fitil = kasa içi çevre + kayıt boyları (metre)               */
 function maliyet(i){
     const fire=1+(F.firePct||0)/100;
-    let aluM=0, aluKg=0, aluTL=0, tulM2=0, ipM=0, aksTL=0, aksList=[];
+    let aluM=0, aluKg=0, aluTL=0, tulM2=0, tulBirim=0, ipM=0, fitilMt=0, aksTL=0, aksList=[];
     const kanatN=i.sis==='duble'?2:(i.sis==='yatay'?1:0);
+    const aksEkle=(ad,adet,fiyat)=>{if(adet>0){const tl=adet*(fiyat||0);aksTL+=tl;aksList.push({ad,adet,tl});}};
     if(i.sis!=='duz'){
         const mKasa=(2*(i.h-8)+2*(i.w-4))/100;
         const mKanat=kanatN*(i.h-8-0.8)/100;
@@ -892,7 +947,10 @@ function maliyet(i){
         aluKg=(mKasa*F.kgmPliseKasa+mKanat*F.kgmPliseKanat)*fire;
         aluTL=aluKg*F.aluPliseKg;
         tulM2=(i.w/100)*((i.h-4.5)/100);
+        tulBirim=F.tulPliseM2;
         ipM=((i.w+i.h)*2+40)/100;
+        aksEkle('Plise takozu',F.pliseTakozAdet,F.pliseTakozFiyat);
+        aksEkle('Teker ('+kanatN+' kanat × '+F.tekerAdet+')',F.tekerAdet*kanatN,F.tekerFiyat);
     }else{
         const nk=kayitSayisi(i.h);
         const mKasa=(2*(i.h-5)+2*(i.w-5)+nk*(i.w-5-0.5))/100;
@@ -900,15 +958,18 @@ function maliyet(i){
         aluKg=mKasa*F.kgmDuzKasa*fire;
         aluTL=aluKg*F.aluDuzKg;
         tulM2=((i.w-5)/100)*((i.h-5)/100);
+        tulBirim=F.tulDuzM2;
+        fitilMt=(2*(i.w-5)+2*(i.h-5)+nk*(i.w-5-0.5))/100;
+        aksEkle('Düz takoz',4,F.duzTakozFiyat);
+        aksEkle('Orta kayıt takozu ('+nk+' kayıt × 2)',nk*2,F.kayitTakozFiyat);
+        const nMentese=i.h>=F.menteseEsik?3:2;
+        aksEkle('Menteşe (boy '+(i.h>=F.menteseEsik?'≥':'<')+' '+F.menteseEsik+' cm)',nMentese,F.menteseFiyat);
+        aksEkle('Çıtçıt ('+nk+' kayıt)',nk>=2?2:1,F.citcitFiyat);
+        aksEkle('Kulp',1,F.kulpFiyat);
     }
-    F.aks.forEach(a=>{
-        const tekil=i.sis==='duz'?a.duz:(a.per==='kanat'?a.plise*kanatN:a.plise);
-        if(tekil>0&&a.fiyat>0){aksTL+=tekil*a.fiyat;aksList.push({ad:a.ad,adet:tekil,tl:tekil*a.fiyat});}
-        else if(tekil>0){aksList.push({ad:a.ad,adet:tekil,tl:0});}
-    });
-    const tulTL=tulM2*F.tulM2, ipTL=ipM*F.ipM;
-    const birim=aluTL+tulTL+ipTL+aksTL;
-    return {aluM,aluKg,aluTL,tulM2,tulTL,ipM,ipTL,aksTL,aksList,birim,imalat:birim*i.adet};
+    const tulTL=tulM2*tulBirim, ipTL=ipM*F.ipM, fitilTL=fitilMt*F.fitilM;
+    const birim=aluTL+tulTL+ipTL+fitilTL+aksTL;
+    return {aluM,aluKg,aluTL,tulM2,tulTL,tulBirim,ipM,ipTL,fitilMt,fitilTL,aksTL,aksList,birim,imalat:birim*i.adet};
 }
 
 /* ============================================================
@@ -1196,8 +1257,9 @@ function renderFiyat(){
             </div>
             <div class="fi-det">
                 <div class="d-row"><span>Alüminyum · ${m.aluM.toFixed(2)} m → ${m.aluKg.toFixed(2)} kg (fire dahil)</span><span class="dv">${TL(m.aluTL)}</span></div>
-                <div class="d-row"><span>Tül · ${m.tulM2.toFixed(2)} m²</span><span class="dv">${TL(m.tulTL)}</span></div>
+                <div class="d-row"><span>${i.sis==='duz'?'Düz tül (pilesiz)':'Plise tülü (pileli)'} · ${m.tulM2.toFixed(2)} m² × ${m.tulBirim} ₺</span><span class="dv">${TL(m.tulTL)}</span></div>
                 ${m.ipM>0?`<div class="d-row"><span>İp · ${m.ipM.toFixed(2)} m</span><span class="dv">${TL(m.ipTL)}</span></div>`:''}
+                ${m.fitilMt>0?`<div class="d-row"><span>Fitil · ${m.fitilMt.toFixed(2)} m</span><span class="dv">${TL(m.fitilTL)}</span></div>`:''}
                 ${aksLines}
                 <div class="d-row" style="border-top:1.5px solid var(--line);margin-top:4px"><span><b>Birim imalat (1 adet)</b></span><span class="dv"><b>${TL(m.birim)}</b></span></div>
             </div>
@@ -1381,13 +1443,27 @@ function renderProjeler(){
 }
 
 /* ---------- BÖLÜM GEÇİŞİ / YAZDIRMA ---------- */
-function goSec(name){
+let secGecmis=[];            // Android geri tuşu için sekme geçmişi
+let aktifSec='olcu';
+function goSec(name,geriMi){
+    if(!geriMi && name!==aktifSec){secGecmis.push(aktifSec);if(secGecmis.length>30)secGecmis.shift();}
+    aktifSec=name;
     document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.sec===name));
     document.querySelectorAll('.sec').forEach(s=>s.classList.toggle('active',s.id==='sec-'+name));
     if(name==='kayit')renderProjeler();
     window.scrollTo({top:0});
 }
 document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>goSec(b.dataset.sec)));
+
+/* Android geri tuşu: önizleme açıksa kapat → sekme geçmişinde geri git →
+   geçmiş bitince uygulamayı kapatmak yerine arka plana al */
+if(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform()&&Capacitor.Plugins.App){
+    Capacitor.Plugins.App.addListener('backButton',()=>{
+        if(document.getElementById('prevOverlay').classList.contains('open')){prevKapat();return;}
+        if(secGecmis.length){goSec(secGecmis.pop(),true);return;}
+        try{Capacitor.Plugins.App.minimizeApp();}catch(e){}
+    });
+}
 
 function yazdir(mod){
     if(!aktifler().length){alert('Listeye iş ekleyin.');return;}
@@ -1452,12 +1528,21 @@ function ciktiAc(mod){
     prevHTML=buildPrintDoc(mod);
     prevAd= mod==='montaj'?'Montaj Fişi':mod==='kesim'?'Kesim Planı':'Fiyat Teklifi';
     document.getElementById('prevTitle').textContent='Önizleme — '+prevAd;
-    document.getElementById('prevFrame').srcdoc=prevHTML;
+    // çerçeve her seferinde sıfırdan kurulur; eski bir çerçevenin takılı
+    // kalıp tıklamaları yutmaması / boyamayı kilitlememesi için
+    const wrap=document.querySelector('.prev-frame-wrap');
+    const eski=document.getElementById('prevFrame');
+    if(eski)eski.remove();
+    const f=document.createElement('iframe');
+    f.id='prevFrame'; f.title='Çıktı önizleme';
+    wrap.appendChild(f);
+    f.srcdoc=prevHTML;
     document.getElementById('prevOverlay').classList.add('open');
 }
 function prevKapat(){
     document.getElementById('prevOverlay').classList.remove('open');
-    document.getElementById('prevFrame').srcdoc='';
+    const f=document.getElementById('prevFrame');
+    if(f)f.remove();
 }
 async function prevYazdir(){
     if(nativeMi()){
