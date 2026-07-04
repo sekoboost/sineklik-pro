@@ -1378,8 +1378,12 @@ function yazdir(mod){
    ============================================================ */
 const PRINT_DOC_CSS=`
     @page{margin:13mm}
-    html,body{background:#fff!important;margin:0;padding:0}
+    /* ana stilden kopyalanan overflow/zoom kuralları yazdırmada içeriği kırpar — geri al */
+    html,body{background:#fff!important;margin:0;padding:0;
+        overflow:visible!important;overflow-x:visible!important;
+        max-width:none!important;height:auto!important;overscroll-behavior-x:auto!important}
     .printdoc{max-width:820px;margin:0 auto;padding:26px 24px 40px;font-size:12px}
+    @media print{.printdoc{max-width:none;padding:0}}
     .print-head{text-align:center;margin-bottom:16px;padding-bottom:10px;border-bottom:2px solid #000}
     .print-head h1{font-size:18px}
     .print-head p{font-size:11px;color:#444;margin-top:3px}
