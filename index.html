@@ -277,7 +277,7 @@
     /* ===== FİYATLANDIRMA ===== */
     .f-grid{display:grid;grid-template-columns:minmax(320px,400px) minmax(0,1fr);gap:20px;align-items:start}
     .f-settings{display:flex;flex-direction:column;gap:16px;position:sticky;top:24px;min-width:0}
-    .f-set-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .f-set-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
     .f-field{min-width:0}
     .f-field label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
     .f-field .unit-in{display:flex;align-items:center;min-width:0;border:1.5px solid var(--line);border-radius:9px;overflow:hidden;background:#fff;transition:border-color .13s,box-shadow .13s}
@@ -294,7 +294,7 @@
     .aks-tbl input:focus{outline:none;border-color:var(--copper)}
     .aks-ad{font-weight:600;color:var(--ink2);font-size:12.5px}
 
-    .kar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .kar-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
     .kar-box{border:1.5px solid var(--line);border-radius:12px;padding:13px 14px}
     .kar-box.k1{border-color:var(--plise-line);background:linear-gradient(180deg,var(--plise-soft),#fff)}
     .kar-box.k2{border-color:var(--green-line);background:linear-gradient(180deg,var(--green-soft),#fff)}
@@ -338,6 +338,38 @@
     .fi-cols .r{text-align:right}
     .teklif-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px;
         background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:14px 16px}
+
+    /* fiyat sonuç sütunu: kendi genişliğine göre düzen seçer (pencere/zoom bağımsız) */
+    .f-results{container-type:inline-size;min-width:0}
+    @container (max-width:840px){
+        .fi-head{gap:7px;padding:11px 12px}
+        .fi-head .f-tl{font-size:12px}
+        .fi-head .f-oda{font-size:12.5px}
+        .fi-head .f-olcu{font-size:11.5px}
+        .f-tiles{gap:10px}
+        .f-tile b{font-size:18px}
+        .f-tile{padding:13px 14px}
+    }
+    @container (max-width:620px){
+        .fi-cols{display:none}
+        .fi-head{
+            grid-template-columns:56px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 26px;
+            gap:7px 8px;
+            grid-template-areas:
+                "poz oda oda oda caret"
+                "olcu olcu olcu olcu olcu"
+                "im im dk ms ms";
+        }
+        .fi-head .f-poz{grid-area:poz}
+        .fi-head .f-oda{grid-area:oda;font-size:13.5px}
+        .fi-head .f-olcu{grid-area:olcu;font-size:12px}
+        .fi-caret{grid-area:caret}
+        .fi-head .f-tl{text-align:left;font-size:12px;white-space:nowrap}
+        .fi-head .f-tl::before{content:attr(data-t);display:block;font-family:var(--sans);font-weight:700;font-size:8.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+        .fi-head .c-im{grid-area:im}.fi-head .c-dk{grid-area:dk}.fi-head .c-ms{grid-area:ms}
+        .f-tiles{grid-template-columns:1fr}
+        .f-tile b{font-size:20px}
+    }
     .teklif-bar input,.teklif-bar select{border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13.5px}
     .teklif-bar input:focus,.teklif-bar select:focus{outline:none;border-color:var(--copper)}
     .teklif-bar input{flex:1;min-width:150px}
@@ -491,17 +523,7 @@
         .tul-row.head{display:none}
         .tul-row .t-oda{width:100%;order:-1;color:var(--ink);font-weight:700}
 
-        .f-tiles{grid-template-columns:1fr;gap:10px}
-        .f-set-grid{grid-template-columns:1fr 1fr}
-        .fi-cols{display:none}
-        .fi-head{grid-template-columns:56px 1fr 26px;grid-template-areas:"poz oda caret" "olcu olcu olcu" "im dk ms";row-gap:6px}
-        .fi-head .f-poz{grid-area:poz}
-        .fi-head .f-oda{grid-area:oda}
-        .fi-head .f-olcu{grid-area:olcu}
-        .fi-caret{grid-area:caret}
-        .fi-head .f-tl{text-align:left;font-size:12.5px}
-        .fi-head .f-tl::before{content:attr(data-t);display:block;font-family:var(--sans);font-weight:700;font-size:8.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
-        .fi-head .c-im{grid-area:im}.fi-head .c-dk{grid-area:dk}.fi-head .c-ms{grid-area:ms}
+        /* fiyat satırlarının kart düzeni container query ile yönetilir (yukarıda) */
 
         .tk-row{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:13px 14px}
         .tk-bar{display:none}
@@ -549,7 +571,7 @@
         <div class="ss"><b id="s-is">0</b><small>İş</small></div>
         <div class="ss"><b id="s-adet">0</b><small>Adet</small></div>
     </div>
-    <div class="side-ver">v2.1 · Atölye Sürümü</div>
+    <div class="side-ver">v2.2 · Atölye Sürümü</div>
 </aside>
 
 <!-- ===== MOBİL BAŞLIK ===== -->
@@ -730,7 +752,7 @@
                     </div>
                 </div>
             </div>
-            <div>
+            <div class="f-results">
                 <div class="f-tiles" id="fTiles"></div>
                 <div class="fi-cols"><span>Poz</span><span>Tanım</span><span>Ölçü</span><span class="r">İmalat</span><span class="r">Dükkan</span><span class="r">Müşteri</span><span></span></div>
                 <div id="fiyatBox"></div>
